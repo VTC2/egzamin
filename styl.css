@@ -1,65 +1,101 @@
 * {
     font-family: Georgia;
-    
+
 
 }
+<<<<<<< Updated upstream
+=======
 
-header div{
+form {
+    margin-left: 50px;
+}
+>>>>>>> Stashed changes
+
+header div {
     background-color: navy;
-    color:white;
+    color: white;
     text-align: center;
     height: 100px;
     width: 50%;
 }
-header{
+
+header {
     display: flex;
-    flex-direction: row ;
+    flex-direction: row;
 
 }
-nav{ background-color: navy;
-padding: 20px; 
-content:"";}
-main{
+
+#daty {
     display: flex;
-    flex-direction: row ;}
-option{
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+nav {
+    background-color: navy;
+    padding: 20px;
+    content: "";
+}
+
+main {
+    display: flex;
+    flex-direction: row;
+}
+
+option {
     color: silver;
     margin: 50px;
 
 }
 
-option:hover{
+option:hover {
     caret-color: white;
     border-bottom: 2px;
-    color:red;
+    color: red;
 }
 
-main section{
+main section {
     background-color: azure;
     height: 550px;
 
 }
-#leftBlock{
+
+#leftBlock {
     width: 70%;
 
 }
-#rightBlock{
+
+#rightBlock {
     width: 30%;
 }
 
-footer{
+footer {
     background-color: navy;
     color: white
 }
-table{
-    border:solid 1px navy;
+
+table {
+    border: solid 1px navy;
     margin: auto;
-    width: 70%;    
+    width: 70%;
 }
-table:hover{
+
+table:hover {
     caret-color: skyblue;
 }
 
-section img{
+section img {
     width: 90%;
+}
+
+#wprowadzanie{
+    display: none;
+}
+
+#dodaj{
+    background-color: navy;
+    color:white;
+    width: 100px;
+    height: 30px;
 }
