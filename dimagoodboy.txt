@@ -1,0 +1,14 @@
+select nazwa, rzeka, stanalarmowy from wodowskazy;
+
+INSERT INTO Pomiary (wodowskazy_id, dataPomiaru, stanWody)
+VALUES (12, '2022-05-07', 350);
+
+SELECT W.nazwa, W.rzeka, W.stanOstrzegawczy, W.stanAlarmowy, P.stanWody FROM Wodowskazy AS W INNER JOIN Pomiary AS P ON W.id = P.wodowskazy_id WHERE P.dataPomiaru = '2022-05-05';
+
+SELECT
+    dataPomiaru,
+    AVG(stanWody) AS sredniStanWody
+FROM
+    Pomiary
+GROUP BY
+    dataPomiaru;
