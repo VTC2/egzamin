@@ -66,16 +66,26 @@ $nastepnaData = ($indexDaty < count($daty) - 1) ? $daty[$indexDaty + 1] : null;
 
     <main>
         <section id="leftBlock">
-            <div id="daty">
-                <?php if ($poprzedniaData): ?>
-                    <a href="?data=<?= $poprzedniaData ?>">poprzednia</a> <!-- dodaj styl do przycisku -->
+        <div id="daty">
+    <?php if ($poprzedniaData): ?>
+        <a href="?data=<?= $poprzedniaData ?>">← poprzednia</a>
+    <?php endif; ?>
 
-                <?php endif; ?>
-                <h3 style="margin: 0;">Stany na dzień <?= htmlspecialchars($aktualnaData) ?></h3>
-                <?php if ($nastepnaData): ?>
-                    <a href="?data=<?= $nastepnaData ?>">nastepna</a> <!-- dodaj styl do przycisku -->
-                <?php endif; ?>
-            </div>
+    <form method="get" action="index.php" style="display: inline;">
+        <select name="data" onchange="this.form.submit()">
+            <?php foreach ($daty as $data): ?>
+                <option value="<?= $data ?>" <?= $data == $aktualnaData ? 'selected' : '' ?>>
+                    <?= $data ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+    </form>
+
+    <?php if ($nastepnaData): ?>
+        <a href="?data=<?= $nastepnaData ?>">następna →</a>
+    <?php endif; ?>
+</div>
+
 
             <table>
                 <tr>
