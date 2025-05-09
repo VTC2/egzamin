@@ -3,15 +3,12 @@
     
 
 }
-form{
-margin-left: 50px;
-}
 
 header div{
     background-color: navy;
     color:white;
     text-align: center;
-    height: 100px;
+    height: 150px;
     width: 50%;
 }
 header{
@@ -66,3 +63,4 @@ table:hover{
 section img{
     width: 90%;
 }
+
