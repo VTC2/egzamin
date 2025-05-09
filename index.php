@@ -13,12 +13,44 @@ if ($polaczenie->connect_error) {
     die("Błąd połączenia z bazą: " . $polaczenie->connect_error);
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lista']) && isset($_SESSION['grupa']) && $_SESSION['grupa'] === 'Badacze') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lista'], $_POST['data'], $_POST['stanOdpadow']) && isset($_SESSION['grupa']) && $_SESSION['grupa'] === 'Badacze') {
     $idWodomierza = $_POST['lista'];
-    $dataPomiaru = date('Y-m-d', strtotime($_POST['data']));
+    $dataPomiaru = $_POST['data'];
     $stanWody = $_POST['stanOdpadow'];
-    $sqlInsert = "INSERT INTO pomiary (wodowskazy_id, dataPomiaru, stanWody) VALUES ($idWodomierza, '$dataPomiaru', $stanWody)";
-    $polaczenie->query($sqlInsert);
+
+    $stmt = $polaczenie->prepare("INSERT INTO pomiary (wodowskazy_id, dataPomiaru, stanWody) VALUES (?, ?, ?)");
+    $stmt->bind_param("isi", $idWodomierza, $dataPomiaru, $stanWody);
+    $stmt->execute();
+    $stmt->close();
+}
+
+$datyWynik = $polaczenie->query("SELECT DISTINCT dataPomiaru FROM Pomiary ORDER BY dataPomiaru");
+$daty = [];
+while ($wiersz = $datyWynik->fetch_assoc()) {
+    $daty[] = $wiersz['dataPomiaru'];
+}
+
+$indexDaty = count($daty) - 1;
+if (isset($_GET['data'])) {
+    $klucz = array_search($_GET['data'], $daty);
+    if ($klucz !== false) {
+        $indexDaty = $klucz;
+    }
+}
+$aktualnaData = $daty[$indexDaty] ?? null;
+
+$poprzedniaData = ($indexDaty > 0) ? $daty[$indexDaty - 1] : null;
+$nastepnaData = ($indexDaty < count($daty) - 1) ? $daty[$indexDaty + 1] : null;
+
+$wynik = null;
+if ($aktualnaData) {
+    $zapytanie = "
+        SELECT w.nazwa, w.rzeka, w.stanOstrzegawczy, w.stanAlarmowy, p.stanWody
+        FROM Wodowskazy w
+        JOIN Pomiary p ON w.id = p.wodowskazy_id
+        WHERE p.dataPomiaru = '$aktualnaData'
+    ";
+    $wynik = $polaczenie->query($zapytanie);
 }
 ?>
 
@@ -32,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lista']) && isset($_S
 <body>
 
 <header>
-    <div>
+    <div id="ledtHeader">
         <img src="obraz1.png" alt="Mapa Polski">
     </div>
     <div>
@@ -40,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lista']) && isset($_S
 
         <?php if (isset($_SESSION['grupa'])): ?>
             <p>Zalogowano jako: <?= htmlspecialchars($_SESSION['grupa']) ?></p>
-            <form method="post" action="">
+            <form method="post">
                 <input type="submit" name="logout" value="Wyloguj">
             </form>
         <?php else: ?>
@@ -50,25 +82,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lista']) && isset($_S
 </header>
 
 <main>
+<?php if (isset($_SESSION['grupa'])): ?>
     <section id="leftBlock">
-        <h3>Stany na dzień 2022-05-05</h3>
+        <div id="daty">
+            <?php if ($poprzedniaData): ?>
+                <a href="?data=<?= $poprzedniaData ?>">← poprzednia</a>
+            <?php endif; ?>
 
-        <?php if (isset($_SESSION['logged_in']) && $_SESSION['logged_in']): ?>
-            <?php
-            $sqlSelect = "SELECT W.nazwa, W.rzeka, W.stanOstrzegawczy, W.stanAlarmowy, P.stanWody 
-                        FROM Wodowskazy AS W 
-                        INNER JOIN Pomiary AS P ON W.id = P.wodowskazy_id 
-                        WHERE P.dataPomiaru = '2022-05-05'";
-            $wynik = $polaczenie->query($sqlSelect);
-            ?>
-            <table>
-                <tr>
-                    <th>Wodomierz</th>
-                    <th>Rzeka</th>
-                    <th>Ostrzegawczy</th>
-                    <th>Alarmowy</th>
-                    <th>Aktualny</th>
-                </tr>
+            <form method="get" action="index.php" style="display: inline;">
+                <select name="data" onchange="this.form.submit()">
+                    <?php foreach ($daty as $data): ?>
+                        <option value="<?= $data ?>" <?= $data == $aktualnaData ? 'selected' : '' ?>>
+                            <?= $data ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </form>
+
+            <?php if ($nastepnaData): ?>
+                <a href="?data=<?= $nastepnaData ?>">następna →</a>
+            <?php endif; ?>
+        </div>
+
+        <h3>Stany na dzień <?= htmlspecialchars($aktualnaData) ?></h3>
+        <table>
+            <tr>
+                <th>Wodomierz</th>
+                <th>Rzeka</th>
+                <th>Ostrzegawczy</th>
+                <th>Alarmowy</th>
+                <th>Aktualny</th>
+            </tr>
+            <?php if ($wynik && $wynik->num_rows > 0): ?>
                 <?php while ($wiersz = $wynik->fetch_assoc()): ?>
                     <tr>
                         <td><?= htmlspecialchars($wiersz['nazwa']) ?></td>
@@ -78,36 +123,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lista']) && isset($_S
                         <td><?= $wiersz['stanWody'] ?></td>
                     </tr>
                 <?php endwhile; ?>
-            </table>
-
-            <?php if ($_SESSION['grupa'] === 'Badacze'): ?>
-                <form method="post" action="index.php">
-                    <label for="lista">Wodomierz</label>
-                    <select id="lista" name="lista" required>
-                        <?php
-                        $opcjaWodomierze = $polaczenie->query("SELECT id, nazwa FROM Wodowskazy");
-                        while ($opcja = $opcjaWodomierze->fetch_assoc()) {
-                            echo "<option value='{$opcja['id']}'>" . htmlspecialchars($opcja['nazwa']) . "</option>";
-                        }
-                        ?>
-                    </select>
-
-                    <label for="data">Data</label>
-                    <input type="date" id="data" name="data" required>
-
-                    <label for="stanOdpadow">Pomiar</label>
-                    <input type="number" id="stanOdpadow" name="stanOdpadow" required>
-
-                    <input type="submit" value="Dodaj pomiar">
-                </form>
             <?php else: ?>
-                <p>Dodawanie dostępne tylko dla grupy Badacze.</p>
+                <tr><td colspan="5">Brak danych dla tej daty.</td></tr>
             <?php endif; ?>
+        </table>
 
+        <?php if ($_SESSION['grupa'] === 'Badacze'): ?>
+            <form method="post" action="index.php">
+                <label for="lista">Wodomierz</label>
+                <select id="lista" name="lista" required>
+                    <?php
+                    $opcjaWodomierze = $polaczenie->query("SELECT id, nazwa FROM Wodowskazy");
+                    while ($opcja = $opcjaWodomierze->fetch_assoc()) {
+                        echo "<option value='{$opcja['id']}'>" . htmlspecialchars($opcja['nazwa']) . "</option>";
+                    }
+                    ?>
+                </select>
+
+                <label for="data">Data</label>
+                <input type="date" id="data" name="data" required>
+
+                <label for="stanOdpadow">Pomiar</label>
+                <input type="number" id="stanOdpadow" name="stanOdpadow" required>
+
+                <input type="submit" value="Dodaj pomiar">
+            </form>
         <?php else: ?>
-            <p>Dane dostępne po zalogowaniu.</p>
+            <p>Dodawanie dostępne tylko dla grupy Badacze.</p>
         <?php endif; ?>
     </section>
+<?php else: ?>
+    <section><p>Dane dostępne po zalogowaniu.</p></section>
+<?php endif; ?>
 
     <section id="rightBlock">
         <h3>Informacje</h3>
@@ -118,6 +165,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lista']) && isset($_S
         </ul>
 
         <h3>Średnie stany wód</h3>
+        <?php if (isset($_SESSION['grupa'])): ?>
+    <table>
+        <tr>
+            <td>data</td>
+            <td>stan</td>
+        </tr>
+        <?php 
+        $wynik = $polaczenie->query("
+            SELECT dataPomiaru, AVG(stanWody) as sredniStanWody 
+            FROM Pomiary 
+            GROUP BY dataPomiaru 
+            ORDER BY dataPomiaru
+        ");
+        while ($wiersz = $wynik->fetch_assoc()): ?>
+        <tr>
+            <td><?= htmlspecialchars($wiersz['dataPomiaru'])  ?></td>
+            <td><?= number_format($wiersz['sredniStanWody'], 1) ?></td>
+        </tr>
+        <?php endwhile; ?>
+    </table>
+<?php else: ?>
+    <p>Średnie stany wód dostępne po zalogowaniu.</p>
+<?php endif; ?>
         <a href="https://komunikaty.pl">Dowiedz się więcej</a>
         <img src="obraz2.jpg" alt="rzeka">
     </section>
@@ -127,9 +197,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['lista']) && isset($_S
     <p>Stronę wykonał: Abdul, ..., ..., ...,</p>
 </footer>
 
-<?php
-$polaczenie->close(); 
-?>
-
+<?php $polaczenie->close(); ?>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Logowanie</title>
-    <link rel="stylesheet" href="">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <?php 
@@ -46,12 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php if (!empty($error)) echo "<p style='color:red;'>$error</p>"; ?>
             <form method="post" action="log.php">
                 <div class="usernameLogin">
-                    <label for="username">Nazwa użytkownika:</label><br>
-                    <input type="text" id="username" name="username" required><br>
+                    <label for="username">Nazwa użytkownika:</label>
+                    <input type="text" id="username" name="username" required>
                 </div>
                 <div class="passwordLogin">    
-                    <label for="password">Hasło:</label><br>
-                    <input type="password" id="password" name="password" required><br><br>
+                    <label for="password">Hasło:</label>
+                    <input type="password" id="password" name="password" required>
                 </div>
                 <div class="confirmLogin">
                     <input type="submit" value="Zaloguj" id="submitLogin">
