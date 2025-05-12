@@ -1,0 +1,82 @@
+body {
+            background-color: #27233A;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Cal Sans;
+        }
+
+        #logIn {
+            background-color: #505168;
+            padding: 5vh;
+            margin: 0;
+            height: 50vh;
+            width: 40vh;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 50px 10px rgba(80,81,104);
+        }
+
+        .headerLogin {
+            height: 20%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 25px;
+        }
+
+        .formLogin {
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .usernameLogin, .passwordLogin {
+            height: 37.5%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 25px;
+            margin-bottom: 10px;
+        }
+
+        #username, #password {
+            width: 40vh;
+            height: 5vh;
+            background-color: #27233A;
+            color: white;
+            font-size: 20px;
+            border-radius: 30px;
+            border-color: white;
+            border-style: solid;
+            padding: 5px;
+        }
+
+        .confirmLogin {
+            height: 25%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #submitLogin {
+            height: 5vh;
+            width: 15vh;
+            background-color: #757695;
+            color: white;
+            border-radius: 30px;
+            border-style: solid;
+            border-color: rgb(59, 55, 72);
+            border-width: 3px;
+            font-size: 18px;
+            box-shadow: 0 0 10px rgba(59, 55, 72);
+        }
